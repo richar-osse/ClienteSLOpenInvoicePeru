@@ -1,0 +1,29 @@
+﻿    <UserControl x:Class="SilverlightOpenInvoicePeru.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300" d:DesignWidth="400">
+
+    <Grid x:Name="LayoutRoot" Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="32*"/>
+            <RowDefinition Height="36*" />
+            <RowDefinition Height="37*" />
+            <RowDefinition Height="40*" />
+            <RowDefinition Height="155*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="36*"/>
+            <ColumnDefinition Width="27*"/>
+            <ColumnDefinition Width="37*"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock Text="Cliente de OpenInvoicePeru con Silverlight" Grid.ColumnSpan="3" FontSize="18" />
+        <Button x:Name="BtnLoad" Content="Generar XML" Click="btnLoad_Click" Grid.Column="1" Grid.Row="1" />
+        <Button x:Name="BtnFirmar" Content="Firmar XML" Click="BtnFirmar_OnClick" Grid.Column="1" Grid.Row="2" IsEnabled="False" />
+        <Button x:Name="BtnEnviar" Content="Enviar a SUNAT" Click="BtnEnviar_OnClick" Grid.Column="1" Grid.Row="3" IsEnabled="False" />
+        <TextBlock x:Name="TxtResultado" Grid.Column="0" Grid.ColumnSpan="3" HorizontalAlignment="Center" 
+                   Grid.Row="4" Text="" VerticalAlignment="Center"/>
+    </Grid>
+</UserControl>
