@@ -3,7 +3,6 @@ using OpenInvoicePeru.Comun.Dto.Modelos;
 using RestSharp;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -18,6 +17,7 @@ namespace SilverlightOpenInvoicePeru
         private DocumentoResponse _documentoResponse = new DocumentoResponse();
         private FirmadoResponse _responseFirma = new FirmadoResponse();
         private readonly RestClient _client = new RestClient(BaseUrl);
+
 
         public MainPage()
         {
@@ -43,7 +43,7 @@ namespace SilverlightOpenInvoicePeru
 
         private void CrearFactura()
         {
-            
+
             try
             {
                 _documento = new DocumentoElectronico
@@ -98,22 +98,20 @@ namespace SilverlightOpenInvoicePeru
                 _client.ExecuteAsync<DocumentoResponse>(requestInvoice,
                     response =>
                     {
-                        if (!response.Data.Exito)
-                            throw new Exception(response.Data.MensajeError);
-
                         _documentoResponse = response.Data;
 
-                        TxtResultado.Text = "XML Generado";
-                        BtnFirmar.IsEnabled = true;
+                        Dispatcher.BeginInvoke(() =>
+                        {
+                            TxtResultado.Text = _documentoResponse.Exito 
+                                ? "XML Generado" : _documentoResponse.MensajeError;
+                            BtnFirmar.IsEnabled = _documentoResponse.Exito;
+                        });
+                        
                     });
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-            }
-            finally
-            {
-                Console.ReadLine();
+                TxtResultado.Text = ex.Message;
             }
         }
 
@@ -125,12 +123,17 @@ namespace SilverlightOpenInvoicePeru
         private void BtnFirmar_OnClick(object sender, RoutedEventArgs e)
         {
             TxtResultado.Text = "Firmando XML...";
+            
+            var resourceStream = Application.GetResourceStream(new Uri("certificado.pfx", UriKind.Relative));
+            var arrayBytes = new byte[resourceStream.Stream.Length];
+            resourceStream.Stream.Read(arrayBytes, 0, arrayBytes.Length);
+            var content = Convert.ToBase64String(arrayBytes);
+            
             // Firmado del Documento.
             var firmado = new FirmadoRequest
             {
                 TramaXmlSinFirma = _documentoResponse.TramaXmlSinFirma,
-                //CertificadoDigital = Convert.ToBase64String(File.ReadAllBytes("certificado.pfx")),
-                CertificadoDigital = string.Empty,
+                CertificadoDigital = content,
                 PasswordCertificado = string.Empty,
                 UnSoloNodoExtension = false
             };
@@ -143,12 +146,14 @@ namespace SilverlightOpenInvoicePeru
 
             _client.ExecuteAsync<FirmadoResponse>(requestFirma, response =>
             {
-                if (!response.Data.Exito)
-                    throw new Exception(response.Data.MensajeError);
-
                 _responseFirma = response.Data;
-                BtnEnviar.IsEnabled = true;
-                TxtResultado.Text = "XML Firmado";
+
+                Dispatcher.BeginInvoke(() =>
+                {
+                    TxtResultado.Text = _responseFirma.Exito ? 
+                        "XML Firmado" : _responseFirma.MensajeError;
+                    BtnEnviar.IsEnabled = _responseFirma.Exito;
+                });
             });
         }
 
@@ -173,10 +178,10 @@ namespace SilverlightOpenInvoicePeru
 
             _client.ExecuteAsync<EnviarDocumentoResponse>(requestSendBill, response =>
             {
-                if (!response.Data.Exito)
-                    throw new Exception(response.Data.MensajeError);
-
-                TxtResultado.Text = response.Data.MensajeRespuesta;
+                Dispatcher.BeginInvoke(() =>
+                {
+                    TxtResultado.Text = response.Data.MensajeRespuesta;
+                });
             });
 
         }
